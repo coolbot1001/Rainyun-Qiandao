@@ -1,6 +1,6 @@
 #!/bin/sh
 # 雨云自动签到启动脚本
-# 支持两种运行模式：单次运行（默认）和定时模式
+# 支持三种运行模式：单次运行（默认）、定时模式、Render Web Service 模式
 set -e
 
 DEFAULT_SCHEDULE="0 8 * * *"
@@ -15,6 +15,13 @@ pick_python() {
   done
   return 1
 }
+
+# Render Web Service 模式：
+# - 前台监听 $PORT，满足 Render 端口探测
+# - 后台运行 supercronic，按 CRON_SCHEDULE 定时签到
+if [ "$RENDER_WEB_MODE" = "true" ]; then
+  exec /app/render-web.sh
+fi
 
 if [ "$CRON_MODE" = "true" ]; then
   echo "=== 定时模式启用 ==="
