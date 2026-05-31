@@ -64,12 +64,14 @@ COPY stealth.min.js .
 COPY api_client.py .
 COPY server_manager.py .
 COPY entrypoint.sh .
+COPY render-web.sh .
 
 # 确保 python 命令存在（部分环境只带 python3）
 RUN ln -sf /usr/local/bin/python3 /usr/local/bin/python
 
 # 转换 Windows 换行符为 Unix 格式，并设置执行权限
-RUN sed -i 's/\r$//' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+RUN sed -i 's/\r$//' /app/entrypoint.sh /app/render-web.sh && \
+    chmod +x /app/entrypoint.sh /app/render-web.sh
 
 # 设置环境变量默认值
 ENV RAINYUN_USER=""
@@ -94,9 +96,13 @@ ENV PUSH_KEY=""
 ENV CRON_MODE=false
 ENV CRON_SCHEDULE="0 8 * * *"
 
+# Render Web Service 模式：监听 $PORT，同时后台运行 CRON_MODE=true 的定时签到
+ENV RENDER_WEB_MODE=false
+ENV PORT=10000
+
 # Chromium 路径（Debian 系统）
 ENV CHROME_BIN=/usr/bin/chromium
 ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
-# 启动脚本（支持单次运行和定时模式）
+# 启动脚本（支持单次运行、定时模式和 Render Web Service 模式）
 CMD ["/app/entrypoint.sh"]
